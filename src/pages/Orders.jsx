@@ -2,49 +2,28 @@ import { useState, useEffect } from 'react';
 import { Plus, Trash2, Search, ShoppingCart, TrendingUp } from 'lucide-react';
 import { apis } from "../Utils/api";
 import Registrar from '../components/Ordenes/Registrar';
+import { useUser } from '../components/Context/useUser';
+import { useQuery } from "@tanstack/react-query";
 
 export default function Orders() {
-  const [menu, setMenu] = useState([]);
-  const [cart, setCart] = useState({});
-  const [payment, setPayment] = useState("USD");
-  const [currency, setCurrency] = useState("$");
-  const [sales, setSales] = useState([]);
-  const [deliveryFee, setDeliveryFee] = useState(0);
-  const [comboSelection, setComboSelection] = useState({});
+
+  const {  setMenu,currency,totalDelivery, totalSales, sales } = useUser();
+
+  const { data: q_menu, isLoading } = useQuery({
+    queryKey: ['menu'],
+    queryFn: () => apis.get('menu/menus'),
+    staleTime: 1000 * 60 * 10,
+    gcTime: 1000 * 60 * 60,
+    refetctOnWindowsFocus: true,
+    retry: 2,
+    networkMode: 'offlineFirst'
+  });
 
   useEffect(() => {
-    const fetchMenu = async () => {
-      try {
-        const response = await apis.get("menu/menus");
-
-        setMenu(response.menus || response.data || []);
-      } catch (e) {
-        console.error("Error cargando menú:", e);
-      }
-    };
-    fetchMenu();
-  }, []);
-
-  const currentSubtotal = Object.entries(cart).reduce((sum, [id, qty]) => {
-    const item = menu.find(m => m._id === id); // Usamos _id de MongoDB
-    return item ? sum + item.price * qty : sum;
-  }, 0);
-
-  const currentTotal = currentSubtotal + deliveryFee;
-
-  const totalSales = sales.reduce((sum, sale) => sum + sale.total, 0);
-  const totalDelivery = sales.reduce((sum, sale) => sum + sale.deliveryFee, 0);
-
-  const handleAddSale = (saleData) => {
-    const newSale = {
-      ...saleData,
-      id: Date.now().toString(),
-      timestamp: new Date().toLocaleString('es-ES', { hour: '2-digit', minute: '2-digit' }),
-    };
-    setSales([newSale, ...sales]);
-    setCart({});
-    setDeliveryFee(0);
-  };
+    if (q_menu?.menus) {
+      setMenu(q_menu.menus);
+    }
+  }, [q_menu, setMenu]);
 
   const handleDeleteSale = (id) => {
     setSales(sales.filter(s => s.id !== id));
@@ -69,19 +48,7 @@ export default function Orders() {
 
       <div className="bg-[#0F0F0F] border border-white/5 rounded-[24px] p-1">
         <div className="animate-in fade-in slide-in-from-top-4 duration-300">
-          <Registrar
-            menu={menu}
-            cart={cart}
-            setCart={setCart}
-            setDeliveryFee={setDeliveryFee}
-            currency={currency}
-            deliveryFee={deliveryFee}
-            currentSubtotal={currentSubtotal}
-            currentTotal={currentTotal}
-            handleAddSale={handleAddSale}
-            comboSelection={comboSelection}
-            setComboSelection={setComboSelection}
-          />
+          <Registrar />
         </div>
       </div>
       <div className="space-y-4">

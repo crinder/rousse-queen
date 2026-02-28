@@ -1,4 +1,4 @@
-export default function Registrar({Icon, children}) {
+export default function InputW({icon: Icon, children}) {
 
     return (
         <div className="relative w-full">

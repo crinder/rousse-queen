@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom';
-import { Home, ListCheck, NotebookPen, Folders, ShieldEllipsis } from "lucide-react";
+import { Home, ListCheck, NotebookPen, Folders, ShieldEllipsis, Motorbike } from "lucide-react";
 
 const Nav = () => {
   const navItems = [
@@ -8,6 +8,7 @@ const Nav = () => {
     { label: "Ordenes", path: "/app-rousse-queen/ordenes", icon: NotebookPen },
     { label: "Historial", path: "/app-rousse-queen/historial", icon: Folders },
     { label: "Caja", path: "/app-rousse-queen/caja", icon: ShieldEllipsis },
+    { label: "Delivery", path: "/app-rousse-queen/delivery", icon: Motorbike},
   ];
 
   return (

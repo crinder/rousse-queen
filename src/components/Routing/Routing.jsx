@@ -6,6 +6,8 @@ import AnimatedPage from '../../Utils/AnimatedPage';
 import Principal from '../General/Principal';
 import Menu from '../../components/Menu/Menu';
 import Orders from '../../pages/Orders';
+import Delivery from '../../components/Delivery/Delivery';
+import Caja from '../../pages/Caja';
 
 
 const Routing = () => {
@@ -28,6 +30,9 @@ const Routing = () => {
                     <Route index element={<Navigate to="home" replace />} />
                     <Route path="menu" element={<AnimatedPage><Menu /></AnimatedPage>} />
                     <Route path="ordenes" element={<AnimatedPage><Orders /></AnimatedPage>} />
+                    <Route path="historial" element={<AnimatedPage>Historial</AnimatedPage>} />
+                    <Route path="caja" element={<AnimatedPage><Caja /></AnimatedPage>} />
+                    <Route path="delivery" element={<AnimatedPage><Delivery /></AnimatedPage>} />
                 </Route>
 
             </Routes>
