@@ -171,6 +171,7 @@ export default function Menu() {
             >
                 Agregar
             </button>
+
             <List
                 visible={isListVisible}
                 onHide={() => setIsListVisible(false)}

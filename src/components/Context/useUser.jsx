@@ -1,4 +1,6 @@
 import React, { createContext, useContext, useEffect, useState, useMemo } from 'react'
+import { apis } from "../../Utils/api";
+import { useQuery } from "@tanstack/react-query";
 
 const Context = createContext();
 
@@ -9,6 +11,23 @@ export const AuthProvider = ({ children }) => {
     const [deliveryFee, setDeliveryFee] = useState(0);
     const [currency, setCurrency] = useState("$");
     const [sales, setSales] = useState([]);
+    const [rate, setRate] = useState(0);
+    const [generalObservation, setGeneralObservation] = useState("");
+    const [spicySelection, setSpicySelection] = useState({});
+
+    const { data: caja, isLoading } = useQuery({
+        queryKey: ['caja'],
+        queryFn: () => apis.get('util/getBox'),
+        staleTime: 1000 * 60 * 10,
+    });
+
+    const cajaData = caja?.caja[0];
+
+    useEffect(() => {
+        if (cajaData) {
+            setRate(Number(cajaData.rate));
+        }
+    }, [cajaData]);
 
     const [order, setOrder] = useState({
         name: "",
@@ -26,7 +45,16 @@ export const AuthProvider = ({ children }) => {
         }, 0);
     }, [cart, menu]);
 
-    const currentTotal = currentSubtotal + deliveryFee;
+    let tasa = 1
+
+
+    if (order.paymentMethod === "USD" ? tasa = rate : tasa = 1);
+
+    const currentTotal = (currentSubtotal + deliveryFee) / tasa;
+
+    if (order.paymentMethod === "USD") {
+        order.cash = currentTotal;
+    }
 
     const totalSales = useMemo(() => sales.reduce((sum, s) => sum + s.total, 0), [sales]);
     const totalDelivery = useMemo(() => sales.reduce((sum, s) => sum + s.deliveryFee, 0), [sales]);
@@ -34,23 +62,45 @@ export const AuthProvider = ({ children }) => {
     const handleAddSale = () => {
         const itemsParaBackend = Object.entries(cart).map(([id, qty]) => {
             const product = menu.find(m => m._id === id);
+
             return {
                 menuItemId: id,
                 name: product?.name,
                 unitPrice: product?.price,
                 quantity: qty,
+                // Guardamos la nota general aquí, ya que tu esquema la tiene por item
+                observation: generalObservation || "",
 
                 comboDetail: product?.type === "COMBO" ? {
-                    burgers: comboSelection[id]?.burgers || [],
-                    extras: comboSelection[id]?.extras || []
-                } : undefined
+                    burgers: Object.entries(comboSelection[id] || {})
+                        .filter(([key, qty]) => typeof qty === 'number' && qty > 0)
+                        .map(([burgerId, quantity]) => {
+                            const burgerInfo = menu.find(m => m._id === burgerId);
+                            return {
+                                name: burgerInfo?.name || "Hamburguesa",
+                                quantity: quantity
+                            };
+                        }),
+                    extras: (product.comboConfig?.extras || []).map(ext => {
+                        const extraId = ext.item?._id || ext.item;
+                        const extraInfo = menu.find(m => m._id === extraId);
+                        const spicy = spicySelection[`${id}_${extraId}`];
+
+                        return {
+                            // Concatenamos el picante al nombre porque el modelo solo tiene name y quantity
+                            name: spicy ? `${extraInfo?.name} (${spicy})` : extraInfo?.name,
+                            quantity: 1
+                        };
+                    })
+                } : { burgers: [], extras: [] }
             };
         });
 
         const payload = {
             name: order.name,
-            status: order.status,
+            status: order.status || "PENDIENTE",
             referencia: order.paymentMethod === "USD" ? `EFECTIVO: ${order.cash}` : order.referencia,
+            // IMPORTANTE: Tu esquema pide un array de itemSchema, y cada itemSchema tiene un array 'item'
             items: [{ item: itemsParaBackend }],
             delivery: [{ id_delivery: order.zona?._id, cost: deliveryFee }],
             payment: [{
@@ -58,19 +108,9 @@ export const AuthProvider = ({ children }) => {
                 amount: currentTotal,
                 totalusd: order.paymentMethod === "USD" ? currentTotal : 0,
                 totalbs: order.paymentMethod === "BS" ? currentTotal : 0,
-            }]
+            }],
+            caja: order.cajaId
         };
-
-        const uiHistorial = {
-            id: Date.now().toString(),
-            name: order.name,
-            total: currentTotal,
-            deliveryFee: deliveryFee,
-            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-            items: itemsParaBackend.map(i => `${i.quantity}x ${i.name}`)
-        };
-
-        setSales(prev => [uiHistorial, ...prev]);
 
         return payload;
     };
@@ -88,7 +128,10 @@ export const AuthProvider = ({ children }) => {
             totalSales,
             totalDelivery,
             sales, setSales,
-            order, setOrder
+            order, setOrder,
+            rate, setRate,
+            spicySelection, setSpicySelection,
+            generalObservation, setGeneralObservation
         }}>
             {children}
         </Context.Provider>

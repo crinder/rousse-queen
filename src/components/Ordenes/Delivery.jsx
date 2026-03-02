@@ -59,6 +59,7 @@ export default function Delivery() {
             });
 
             alert("Venta procesada con éxito");
+            invalidateQueries(['ordersByDay']);
         } catch (e) {
             console.error("Error al guardar la orden:", e);
         }
@@ -129,7 +130,6 @@ export default function Delivery() {
                     </div>
                 </div>
 
-                {/* Totales */}
                 <div className="flex justify-between items-end px-1 pt-2">
                     <div className="flex flex-col">
                         <span className="text-[9px] font-black text-gray-500 uppercase italic">Delivery</span>

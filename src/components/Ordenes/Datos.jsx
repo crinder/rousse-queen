@@ -6,17 +6,14 @@ import { useUser } from '../Context/useUser';
 
 export default function Datos() {
     const {
-        setOrder, order
+        setOrder, order, currentTotal
     } = useUser();
 
-    
 
     const baseInputStyle = "w-full bg-black/40 border border-white/10 rounded-xl pl-9 pr-4 py-2.5 text-[11px] text-white outline-none focus:border-dorado/30 transition-all";
 
     return (
         <div className="p-4 bg-white/[0.02] border border-white/5 rounded-[28px] space-y-3">
-
-
 
             <div className="grid grid-cols-2 gap-3">
                 <InputW icon={CircleDollarSign}>
@@ -27,6 +24,7 @@ export default function Datos() {
                     >
                         <option value="BS">BS (PAGO MÓVIL)</option>
                         <option value="USD">USD (DIVISAS)</option>
+                        <option value="USD">BS y USD (DIVISAS)</option>
                     </select>
                 </InputW>
 
@@ -62,15 +60,14 @@ export default function Datos() {
                             <input
                                 type="number"
                                 placeholder="Efectivo en USD"
-                                value={order.cash}
-                                onChange={(e) => setOrder({ ...order, cash: Number(e.target.value) })}
-                                className={`${baseInputStyle} border-dorado/20 font-mono`}
+                                readOnly
+                                value={`$ ${currentTotal.toFixed(2)}`}
+                                className={`${baseInputStyle} border-emerald-500/20 font-mono bg-white/5 text-emerald-500 cursor-not-allowed`}
                             />
                         </InputW>
                     </div>
                 )}
             </div>
-
 
             <Delivery />
 

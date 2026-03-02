@@ -8,7 +8,8 @@ import Menu from '../../components/Menu/Menu';
 import Orders from '../../pages/Orders';
 import Delivery from '../../components/Delivery/Delivery';
 import Caja from '../../pages/Caja';
-
+import List from '../Ordenes/List'
+import Gastos from '../../pages/Gastos'
 
 const Routing = () => {
     const location = useLocation();
@@ -30,9 +31,10 @@ const Routing = () => {
                     <Route index element={<Navigate to="home" replace />} />
                     <Route path="menu" element={<AnimatedPage><Menu /></AnimatedPage>} />
                     <Route path="ordenes" element={<AnimatedPage><Orders /></AnimatedPage>} />
-                    <Route path="historial" element={<AnimatedPage>Historial</AnimatedPage>} />
+                    <Route path="historial" element={<AnimatedPage><List /></AnimatedPage>} />
                     <Route path="caja" element={<AnimatedPage><Caja /></AnimatedPage>} />
                     <Route path="delivery" element={<AnimatedPage><Delivery /></AnimatedPage>} />
+                    <Route path="gastos" element={<AnimatedPage><Gastos /></AnimatedPage>} />
                 </Route>
 
             </Routes>
