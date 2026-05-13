@@ -2,23 +2,14 @@ import React, { useState, useEffect } from "react";
 import { apis } from "../../Utils/api";
 import { Eye, MapPin, Check } from "lucide-react";
 import DeliveryList from "./DeliveryList";
+import Toast from '../../Utils/Toast';
 
 export default function Delivery() {
-    const [zonas, setZonas] = useState([]);
     const [isListVisible, setIsListVisible] = useState(false);
-
-    // States para el formulario
     const [zona, setZona] = useState("");
     const [cost, setCost] = useState("");
-
-    const fetchZonas = async () => {
-        try {
-            const response = await apis.get("delivery/deliveries");
-            setZonas(response.data || []);
-        } catch (e) { console.error("Error al traer zonas", e); }
-    };
-
-    useEffect(() => { fetchZonas(); }, []);
+    const [toast, setToast] = useState(null);
+    const [type, setType] = useState("success");
 
     const addDeliveryZone = async () => {
         if (!zona || !cost) return;
@@ -30,10 +21,11 @@ export default function Delivery() {
         
         try {
             await apis.post("delivery/add", payload);
-            alert("¡Zona agregada!");
+            setToast("¡Zona agregada!");
+            setType("success");
             setZona(""); setCost("");
-            fetchZonas();
-        } catch (e) { alert("Error al guardar zona"); }
+            queryClient.invalidateQueries(['deliveries']);
+        } catch (e) { setToast("Error al guardar zona") && setType("error") }
     };
 
     return (
@@ -81,8 +73,8 @@ export default function Delivery() {
             <DeliveryList
                 visible={isListVisible}
                 onHide={() => setIsListVisible(false)}
-                refreshData={fetchZonas}
             />
+            {toast && <Toast message={toast} type={type} onClose={() => setToast(null)} />}
         </section>
     );
 }

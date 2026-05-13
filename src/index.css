@@ -15,6 +15,37 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+@layer utilities  {
+
+  .bg-dorado {
+    background-color: #DBAC1F
+  }
+
+  .text-dorado {
+    color: #DBAC1F
+  }
+
+  .border-dorado {
+    border-color: #DBAC1F
+  }
+
+}
+
+@keyframes slide-in {
+  from {
+    transform: translateX(120%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.animate-slide-in {
+  animation: slide-in 0.3s ease;
+}
+
 h1 {
   font-size: 3.2em;
   line-height: 1.1;

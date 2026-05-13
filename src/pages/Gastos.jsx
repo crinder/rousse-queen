@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { apis } from "../Utils/api";
 import { Eye, BanknoteArrowDown, Check } from "lucide-react";
+import {useQueryClient} from "@tanstack/react-query";
+import Toast from '../Utils/Toast';
 
 export default function Gastos() {
 
@@ -9,7 +11,9 @@ export default function Gastos() {
     const [amount, setAmount] = useState("");
     const [type_expense, setType_expense] = useState("DELIVERY");
     const [currency, setCurrency] = useState("BS");
-
+    const queryClient = useQueryClient();
+    const [toast, setToast] = useState(null);
+    const [type, setType] = useState("success");
 
     const addgastos = async () => {
         if (!descripcion || !amount) return;
@@ -23,10 +27,11 @@ export default function Gastos() {
 
         try {
             await apis.post("expense/add", payload);
-            alert("¡Gasto agregado!");
+            setToast("¡Gasto agregado!");
+            setType("success");
             setDescripcion(""); setAmount("");
-            invalidateQueries(['ordersByDay']);
-        } catch (e) { alert("Error al guardar gasto"); }
+            queryClient.invalidateQueries(['ordersByDay']);
+        } catch (e) { setToast("Error al guardar gasto") && setType("error") }
     };
 
     return (

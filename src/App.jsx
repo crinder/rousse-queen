@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import Routing from './Components/Routing/Routing';
+import Routing from './components/Routing/Routing';
 import { BrowserRouter as Router } from "react-router-dom";
 
 function App() {

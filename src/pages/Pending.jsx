@@ -1,11 +1,11 @@
 import { useState } from 'react';
 import { Trash2, CheckCircle, ChevronDown, ReceiptText, ArrowDownCircle } from 'lucide-react';
-import { apis } from "../../Utils/api";
+import { apis } from "../Utils/api";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useUser } from '../Context/useUser';
-import Toast from '../../Utils/Toast';
+import { useUser } from '../components/Context/useUser';
+import Toast from '../Utils/Toast';
 
-export default function Orders() {
+export default function Pending() {
     const queryClient = useQueryClient();
     const [visibleCount, setVisibleCount] = useState(5);
     const [refs, setRefs] = useState({});
@@ -15,17 +15,15 @@ export default function Orders() {
     const [type, setType] = useState("success");
 
     const { data, isLoading } = useQuery({
-        queryKey: ['ordersByDay'],
+        queryKey: ['pending'],
         queryFn: async () => {
-            const res = await apis.get('util/reportForDay');
+            const res = await apis.get('ordern/pending');
             return res || {};
         },
         staleTime: 1000 * 60 * 10,
     });
 
-    const ordenes = data?.ordenes || [];
-    const totales = data?.totales?.[0] || {};
-    const gastos = data?.gastos || [];
+    const ordenes = data?.pending || [];
 
     const toggleCurrency = (orderId) => {
         setPaymentMethods(prev => ({
@@ -39,6 +37,7 @@ export default function Orders() {
         onSuccess: () => {
             queryClient.invalidateQueries(['ordersByDay']);
             queryClient.invalidateQueries(['weeklyStats']);
+            queryClient.invalidateQueries(['pending']);
         }
     });
 
@@ -46,7 +45,8 @@ export default function Orders() {
         try {
             apis.post(`${type}/delete/${id}`);
             queryClient.invalidateQueries(['ordersByDay']);
-             queryClient.invalidateQueries(['weeklyStats']);
+            queryClient.invalidateQueries(['weeklyStats']);
+            queryClient.invalidateQueries(['pending']);
 
             setToast(`eliminado exitosamente`);
             setType("success");
@@ -97,28 +97,10 @@ export default function Orders() {
 
     return (
         <div className="space-y-6 pb-20">
-
-            <div className="grid grid-cols-3 md:grid-cols-6 gap-2">
-                {[
-                    { label: "Ventas BS", val: totales.totalVentas, color: "orange" },
-                    { label: "Ventas USD", val: totales.totalVentasUSD, color: "emerald" },
-                    { label: "Envío", val: totales.totalDelivery, color: "blue" },
-                    { label: "Gastos", val: totales.totalGastosBS, color: "red" },
-                    { label: "Pendiente", val: totales.totalPending, color: "amber" },
-                    { label: "Ordenes", val: ordenes?.length, color: "gray" },
-                    { label: "Balance BS", val: totales.balanceBS, color: "green" },
-                ].map((item, idx) => (
-                    <div key={idx} className={`bg-[#1A1A1A] border border-${item.color}-500/20 rounded-2xl p-2 text-center`}>
-                        <p className={`text-[8px] uppercase font-black text-${item.color}-500 mb-0.5 italic`}>{item.label}</p>
-                        <p className="text-sm font-black text-white">{item.val ? item.val.toLocaleString() : 0}</p>
-                    </div>
-                ))}
-            </div>
-
             <section className="space-y-3">
                 <div className="flex items-center gap-2 px-1">
                     <ReceiptText size={14} className="text-gray-500" />
-                    <h2 className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500">Ventas Recientes</h2>
+                    <h2 className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500">Pendientes</h2>
                 </div>
 
                 <div className="space-y-2">
@@ -212,41 +194,10 @@ export default function Orders() {
                                 </button>
                             )}
                         </>
-                    ) : <p className="text-center text-gray-600 text-[10px] py-4">Sin ventas hoy.</p>}
+                    ) : <p className="text-center text-gray-600 text-[10px] py-4">Sin pendientes.</p>}
                 </div>
             </section>
 
-            <section className="space-y-3">
-                <div className="flex items-center gap-2 px-1">
-                    <ArrowDownCircle size={14} className="text-red-500/70" />
-                    <h2 className="text-[10px] font-black uppercase tracking-[0.2em] text-red-500/70">Gastos del Día</h2>
-                </div>
-
-                <div className="grid gap-2">
-                    {gastos.length > 0 ? (
-                        gastos.map((gasto) => (
-                            <div key={gasto._id} className="bg-red-500/5 border border-red-500/10 rounded-2xl p-3 flex justify-between items-center">
-                                <div>
-                                    <p className="text-[10px] font-black text-red-500/80 uppercase tracking-widest">{gasto.category || 'General'}</p>
-                                    <p className="text-xs text-white/80 italic">{gasto.description}</p>
-                                </div>
-                                <div className="text-right flex">
-                                    <div>
-                                        <p className="text-sm font-black text-white">-{gasto.amount.toLocaleString()} <span className="text-[8px] text-white/30">BS</span></p>
-                                        <p className="text-[8px] text-gray-500 uppercase">{new Date(gasto.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
-                                    </div>
-                                    <button className="p-2 text-gray-800 hover:text-red-500 transition-colors" onClick={() => handleDelete(gasto._id, 'expense')}><Trash2 size={16} /></button>
-                                </div>
-
-                            </div>
-                        ))
-                    ) : (
-                        <div className="py-6 text-center border-2 border-dashed border-white/5 rounded-3xl">
-                            <p className="text-gray-600 text-[9px] font-black uppercase tracking-widest italic">No hay egresos registrados</p>
-                        </div>
-                    )}
-                </div>
-            </section>
             {toast && <Toast message={toast} type={type} onClose={() => setToast(null)} />}
         </div>
 

@@ -1,12 +1,12 @@
 import { useState } from 'react';
 import { NavLink } from 'react-router-dom';
-import { Home, ListCheck, NotebookPen, Folders, ShieldEllipsis, Motorbike, PlusCircle, MoreHorizontal, ReceiptText } from "lucide-react";
+import { Home, ListCheck, NotebookPen, Folders, ShieldEllipsis, Motorbike, PlusCircle, MoreHorizontal, ReceiptText, Clock } from "lucide-react";
 
 const Nav = () => {
   const [showMore, setShowMore] = useState(false);
 
   const mainItems = [
-    { label: "Inicio", path: "/app-rousse-queen/", icon: Home },
+    { label: "Inicio", path: "/app-rousse-queen/home", icon: Home },
     { label: "Ordenes", path: "/app-rousse-queen/ordenes", icon: NotebookPen },
     { label: "Historial", path: "/app-rousse-queen/historial", icon: Folders },
     { label: "Delivery", path: "/app-rousse-queen/delivery", icon: Motorbike },
@@ -16,6 +16,7 @@ const Nav = () => {
     { label: "Caja", path: "/app-rousse-queen/caja", icon: ShieldEllipsis },
     { label: "Menu", path: "/app-rousse-queen/menu", icon: ListCheck },
     { label: "Gastos", path: "/app-rousse-queen/gastos", icon: ReceiptText }, 
+    { label: "Pendientes", path: "/app-rousse-queen/pending", icon: Clock },
   ];
 
   return (

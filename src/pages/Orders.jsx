@@ -31,7 +31,9 @@ export default function Orders() {
 
   return (
     <div className="space-y-6 pb-24 max-w-2xl mx-auto">
-      <div className="grid grid-cols-3 gap-3">
+
+      {/*
+        <div className="grid grid-cols-3 gap-3">
         <div className="bg-[#1A1A1A] border border-orange-500/20 rounded-2xl p-3 shadow-sm">
           <p className="text-[10px] uppercase font-black text-orange-500 mb-1 text-center italic">Ventas</p>
           <p className="text-xl font-black text-white text-center">{currency}{totalSales.toFixed(0)}</p>
@@ -45,6 +47,10 @@ export default function Orders() {
           <p className="text-xl font-black text-white text-center">{sales.length}</p>
         </div>
       </div>
+      */
+
+      }
+      
 
       <div className="bg-[#0F0F0F] border border-white/5 rounded-[24px] p-1">
         <div className="animate-in fade-in slide-in-from-top-4 duration-300">
@@ -58,7 +64,7 @@ export default function Orders() {
         </div>
 
         <div className="space-y-3">
-          {sales.length > 0 ? (
+          {/*sales.length > 0 ? (
             sales.slice(0, 3).map((sale) => (
               <div key={sale.id} className="bg-white/[0.02] border border-white/5 rounded-2xl p-4 flex justify-between items-center group">
                 <div className="flex-1">
@@ -91,7 +97,7 @@ export default function Orders() {
             <div className="py-10 text-center border-2 border-dashed border-white/5 rounded-3xl">
               <p className="text-gray-600 text-[10px] font-black uppercase tracking-widest italic">Esperando primera venta...</p>
             </div>
-          )}
+          )*/}
         </div>
       </div>
     </div>

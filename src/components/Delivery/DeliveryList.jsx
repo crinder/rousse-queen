@@ -2,22 +2,27 @@ import React, { useState, useEffect } from "react";
 import { Dialog } from 'primereact/dialog';
 import { apis } from "../../Utils/api";
 import { Trash2, Search, Check, MapPin, X } from "lucide-react";
+import {useQueryClient,useQuery} from "@tanstack/react-query";
+import Toast from '../../Utils/Toast';
 
-export default function DeliveryList({ visible, onHide, refreshData }) {
+export default function DeliveryList({ visible, onHide }) {
     const [zonas, setZonas] = useState([]);
     const [globalFilter, setGlobalFilter] = useState("");
-    const [loading, setLoading] = useState(false);
+    const [toast, setToast] = useState(null);
+    const [type, setType] = useState("success");
+    const queryClient = useQueryClient();
 
-    const loadZonas = async () => {
-        try {
-            setLoading(true);
-            const res = await apis.get("delivery/deliveries");
-            const data = (res.deliveries || []).map(z => ({ ...z, hasChanges: false }));
-            setZonas(data);
-        } catch (e) { console.error(e); } finally { setLoading(false); }
-    };
+    const { data: deliveries, isLoading } = useQuery({
+        queryKey: ['deliveries'],
+        queryFn: () => apis.get('delivery/deliveries'),
+        staleTime: 1000 * 60 * 10,
+        gcTime: 1000 * 60 * 60,
+        refetctOnWindowsFocus: true,
+        retry: 2,
+        networkMode: 'offlineFirst'
+    });
 
-    useEffect(() => { if (visible) loadZonas(); }, [visible]);
+    useEffect(() => { if (visible) setZonas(deliveries.deliveries || []); }, [ deliveries, isLoading]);
 
     const onInputChange = (id, field, value) => {
         setZonas(prev => prev.map(z => {
@@ -30,19 +35,22 @@ export default function DeliveryList({ visible, onHide, refreshData }) {
 
     const saveChanges = async (rowData) => {
         try {
-            await apis.put(`delivery/update/${rowData._id}`, rowData);
+            await apis.post(`delivery/update/${rowData._id}`, rowData);
             setZonas(prev => prev.map(z => z._id === rowData._id ? { ...z, hasChanges: false } : z));
-            refreshData();
-        } catch (e) { alert("Error al actualizar"); }
+            setToast("Zona actualizada exitosamente");
+            setType("success");
+            queryClient.invalidateQueries(['deliveries']);
+        } catch (e) { setToast("Error al actualizar") && setType("error") }
     };
 
     const deleteItem = async (id) => {
         if (!window.confirm("¿Eliminar zona?")) return;
         try {
-            await apis.delete(`delivery/delete/${id}`);
-            loadZonas();
-            refreshData();
-        } catch (e) { console.error(e); }
+            await apis.post(`delivery/delete/${id}`);
+            useQueryClient().invalidateQueries(['deliveries']);
+            setToast("Zona eliminada exitosamente");
+            setType("success");
+        } catch (e) { setToast("Error al eliminar") && setType("error") }
     };
 
     const filteredZonas = zonas.filter(z =>
@@ -81,7 +89,7 @@ export default function DeliveryList({ visible, onHide, refreshData }) {
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-white/[0.03]">
-                                {filteredZonas.map((z) => (
+                                {filteredZonas && filteredZonas.map((z) => (
                                     <tr key={z._id} className="hover:bg-white/[0.02] transition-colors">
                                         <td className="p-3">
                                             <input
@@ -134,6 +142,7 @@ export default function DeliveryList({ visible, onHide, refreshData }) {
                     </div>
                 </div>
             </div>
+            {toast && <Toast message={toast} type={type} onClose={() => setToast(null)} />}
         </Dialog>
     );
 }
